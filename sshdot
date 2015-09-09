@@ -1,0 +1,35 @@
+#!/bin/bash
+function sshdot() {
+    local SSHHOME=${SSHHOME:=~}
+    if [ -f $SSHHOME/.sshdot ]; then
+        local files=.sshdot
+        if [ -d $SSHHOME/.sshdot.d ]; then
+            files="$files .sshdot.d"
+        fi
+        files="$files $0";
+        local child_home=$(tar c -C $SSHHOME $files | ssh $1 "
+            export SSHHOME=\$(mktemp -d -t .\$(whoami).sshdot.XXXX);
+            tar mx -C \$SSHHOME;
+            echo \$SSHHOME;");
+        ssh -t "$@" "
+            export SSHHOME=$child_home;
+            export SSHDOTCLEANUP=\$SSHHOME;
+            trap \"rm -rf \$SSHDOTCLEANUP; exit\" 0;
+            chmod +x \$SSHHOME/sshdot;
+            cat << 'EOF' > \$SSHHOME/sshdot.bashrc
+            if [ -e /etc/bash.bashrc ]; then source /etc/bash.bashrc; fi
+            if [ -e ~/.bashrc ]; then source ~/.bashrc; fi
+            export PATH=\$PATH:\$SSHHOME
+            source \$SSHHOME/.sshdot;
+EOF
+            bash --rcfile \$SSHHOME/sshdot.bashrc";
+
+    else
+        echo "No such file: $SSHHOME/.sshdot"
+    fi
+}
+if [ $1 ]; then
+    sshdot $@
+else
+    ssh
+fi
