@@ -10,6 +10,10 @@ function sshdot() {
             export SSHHOME=\$(mktemp -d -t .\$(whoami).sshdot.XXXX);
             tar mx -C \$SSHHOME;
             echo \$SSHHOME;");
+        if [ "$?" -ne 0]; then
+            echo "Could not copy configuration to remote machine. Exiting.";
+            exit 1;
+        fi
         ssh -t "$@" "
             export SSHHOME=$child_home;
             export SSHDOTCLEANUP=\$SSHHOME;
