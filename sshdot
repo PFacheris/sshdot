@@ -6,7 +6,7 @@ function sshdot() {
         if [ -d $SSHHOME/.sshdot.d ]; then
             files="$files .sshdot.d"
         fi
-        local child_home=$(COPYFILE_DISABLE=1 tar c -h -C $SSHHOME $files -C $(cd "$(dirname "$0")"; pwd) $(basename $0) | ssh $1 "
+        local child_home=$(COPYFILE_DISABLE=1 tar c -h -C $SSHHOME $files -C $(cd "$(dirname "$0")"; pwd) $(basename $0) | ssh $@ "
             export SSHHOME=\$(mktemp -d -t .\$(whoami).sshdot.XXXX);
             tar mx -C \$SSHHOME;
             echo \$SSHHOME;");
